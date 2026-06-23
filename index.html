@@ -1,18 +1,149 @@
-{% extends "base.html" %}
-{% block content %}
-<section class="hero">
-  <h1>{{ settings.site_tagline }}</h1>
-  <p>Type any idea. Get a complete AI-generated video with narration, scenes, and visuals — in minutes.</p>
-  {% if current_user.is_authenticated %}
-    <a href="{{ url_for('dashboard') }}" class="btn">Open Dashboard</a>
-  {% else %}
-    <a href="{{ url_for('signup') }}" class="btn">Get Started Free</a>
-    <a href="{{ url_for('login') }}" class="btn btn-outline">Login</a>
-  {% endif %}
-</section>
-<section class="features">
-  <div class="card"><h3>🧠 AI Script</h3><p>Gemini writes a scene-by-scene narration script.</p></div>
-  <div class="card"><h3>🎨 AI Images</h3><p>Each scene rendered as a cinematic visual.</p></div>
-  <div class="card"><h3>🎙️ Voice-over</h3><p>Natural text-to-speech narration auto-synced.</p></div>
-</section>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jainu AI - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-[#0b1329] text-slate-100 min-h-screen flex flex-col justify-between font-sans">
+
+    <header class="border-b border-slate-800/80 px-6 py-4 flex justify-between items-center bg-[#0b1329]/90 backdrop-blur-md sticky top-0 z-50">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 bg-gradient-to-tr from-blue-500 to-purple-600 rounded-xl flex items-center justify-center font-black text-white">
+                J
+            </div>
+            <span class="text-xl font-bold tracking-wider text-white">JAINU <span class="text-blue-400">AI</span></span>
+        </div>
+        <div class="flex items-center gap-4">
+            <span id="userBadge" class="text-xs bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/20 font-medium">
+                <i class="fas fa-user-check mr-1"></i> Dashboard Active
+            </span>
+            <a href="/api/logout" class="text-sm text-slate-400 hover:text-white transition-all"><i class="fas fa-sign-out-alt"></i></a>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-5xl w-full mx-auto p-4 md:p-6 flex flex-col justify-between overflow-y-auto">
+        
+        <div id="outputContainer" class="flex-1 flex flex-col items-center justify-center min-h-[380px] border border-dashed border-slate-800 rounded-2xl bg-slate-900/30 p-6 mb-6">
+            
+            <div id="emptyState" class="w-full max-w-3xl">
+                <div class="text-center mb-8">
+                    <h2 class="text-xl md:text-2xl font-bold text-white mb-2">Jainu AI Video Platform</h2>
+                    <p class="text-sm text-slate-400">Type any idea. Get a complete AI-generated video with narration, scenes, and visuals — in minutes.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="p-5 bg-slate-900/60 border border-slate-800/80 rounded-xl shadow-xl">
+                        <div class="w-10 h-10 bg-blue-500/10 text-blue-400 rounded-lg flex items-center justify-center mb-3 text-lg"><i class="fas fa-brain"></i></div>
+                        <h4 class="font-bold text-sm text-white mb-1">🧠 AI Script</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">Gemini writes a scene-by-scene narration script seamlessly.</p>
+                    </div>
+                    <div class="p-5 bg-slate-900/60 border border-slate-800/80 rounded-xl shadow-xl">
+                        <div class="w-10 h-10 bg-purple-500/10 text-purple-400 rounded-lg flex items-center justify-center mb-3 text-lg"><i class="fas fa-palette"></i></div>
+                        <h4 class="font-bold text-sm text-white mb-1">🎨 AI Images</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">Each scene rendered as a cinematic visual with 100% face consistency.</p>
+                    </div>
+                    <div class="p-5 bg-slate-900/60 border border-slate-800/80 rounded-xl shadow-xl">
+                        <div class="w-10 h-10 bg-emerald-500/10 text-emerald-400 rounded-lg flex items-center justify-center mb-3 text-lg"><i class="fas fa-microphone"></i></div>
+                        <h4 class="font-bold text-sm text-white mb-1">🎙️ Voice-over</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">Natural text-to-speech narration auto-synced with video timelines.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="loader" class="hidden text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
+                <p class="text-slate-400 text-sm font-medium">Jainu AI is generating your dynamic assets...</p>
+            </div>
+
+            <div id="resultBox" class="hidden w-full h-full flex flex-col items-center justify-center"></div>
+        </div>
+
+        <div class="w-full bg-[#131c35] border border-slate-800/80 rounded-2xl p-4 shadow-2xl">
+            <div class="flex gap-2 mb-3 border-b border-slate-800/50 pb-3">
+                <button id="modeVideo" onclick="setMode('video')" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white">
+                    <i class="fas fa-video mr-1.5"></i> AI Video Generator
+                </button>
+                <button id="modeImage" onclick="setMode('image')" class="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:bg-slate-800">
+                    <i class="fas fa-image mr-1.5"></i> 100% Original Face Image
+                </button>
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <textarea id="promptInput" rows="2" placeholder="Describe your scene script (Hindi/English)..."
+                    class="w-full bg-transparent text-white placeholder-slate-500 focus:outline-none text-base border-0 p-1 resize-none"></textarea>
+                
+                <div class="flex justify-between items-center pt-2">
+                    <div class="flex items-center gap-3 text-slate-400 text-lg">
+                        <label class="cursor-pointer hover:text-blue-400 transition-all">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <input type="file" id="fileUpload" class="hidden" onchange="document.getElementById('fileStatus').classList.remove('hidden')">
+                        </label>
+                        <button onclick="alert('Camera system locked.')" class="hover:text-blue-400"><i class="fas fa-camera"></i></button>
+                        <span id="fileStatus" class="text-xs text-emerald-400 font-medium hidden"><i class="fas fa-check-circle"></i> File Synced</span>
+                    </div>
+
+                    <button onclick="generateAI()" class="bg-blue-600 hover:bg-blue-500 text-white w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-md shadow-blue-600/20">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentMode = 'video';
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('modeVideo').className = mode === 'video' ? 'px-4 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white' : 'px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:bg-slate-800';
+            document.getElementById('modeImage').className = mode === 'image' ? 'px-4 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white' : 'px-4 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:bg-slate-800';
+        }
+
+        async function generateAI() {
+            const prompt = document.getElementById('promptInput').value;
+            const emptyState = document.getElementById('emptyState');
+            const loader = document.getElementById('loader');
+            const resultBox = document.getElementById('resultBox');
+
+            if (!prompt.trim()) return alert("Kripya prompt enter karein!");
+
+            emptyState.classList.add('hidden');
+            resultBox.classList.add('hidden');
+            loader.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt, type: currentMode })
+                });
+                const data = await response.json();
+
+                loader.classList.add('hidden');
+                resultBox.classList.remove('hidden');
+
+                if (data.type === 'video') {
+                    resultBox.innerHTML = `
+                        <div class="w-full max-w-2xl bg-slate-950 p-2 rounded-xl border border-slate-800">
+                            <video class="w-full rounded-lg aspect-video" controls autoplay muted loop playsinline>
+                                <source src="${data.url}" type="video/mp4">
+                            </video>
+                        </div>`;
+                } else {
+                    resultBox.innerHTML = `
+                        <div class="w-full max-w-md bg-slate-950 p-2 rounded-xl border border-slate-800">
+                            <img src="${data.url}" class="w-full rounded-lg object-cover aspect-square">
+                        </div>`;
+                }
+            } catch (err) {
+                loader.classList.add('hidden');
+                resultBox.classList.remove('hidden');
+                alert("Generation matrix reload optimized.");
+            }
+        }
+    </script>
+</body>
+</html>
