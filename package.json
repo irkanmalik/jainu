@@ -1,0 +1,19 @@
+{
+  "name": "jainu-ai",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.5",
+    "cors": "^2.8.6",
+    "express": "^4.22.2",
+    "express-session": "^1.19.0"
+  },
+  "description": "Text-to-video AI website (Pictory.ai jaisa). Pure Python (Flask). Full admin panel jisme aap **sab kuchh** control kar sakte ho.",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

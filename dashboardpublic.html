@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Create a new video</h2>
+{% if settings.video_gen_enabled == 'true' %}
+<form method="post" action="{{ url_for('generate') }}" class="gen-form">
+  <textarea name="prompt" maxlength="{{ settings.max_prompt_length }}" placeholder="e.g. The history of the Mughal Empire in 1 minute..." required></textarea>
+  <button class="btn" type="submit">⚡ Generate video (1 credit)</button>
+</form>
+{% else %}
+<p class="flash error">Video generation is currently disabled by admin.</p>
+{% endif %}
+
+<h3 style="margin-top:2rem">Your videos</h3>
+<div class="video-grid">
+  {% for v in videos %}
+    <div class="video-card">
+      <div class="status status-{{ v.status }}">{{ v.status }}</div>
+      <p class="prompt">{{ v.prompt[:120] }}</p>
+      {% if v.status == 'done' and v.filename %}
+        <video src="{{ url_for('serve_video', fname=v.filename) }}" controls></video>
+        <a class="btn-sm" href="{{ url_for('serve_video', fname=v.filename) }}" download>Download</a>
+      {% elif v.status == 'processing' %}
+        <p>⏳ Processing... refresh in a minute</p>
+      {% elif v.status == 'failed' %}
+        <p class="error">Error: {{ v.error }}</p>
+      {% endif %}
+      <small>{{ v.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+    </div>
+  {% else %}
+    <p>No videos yet. Create your first one above ☝️</p>
+  {% endfor %}
+</div>
+<script>
+  // auto-refresh if any processing
+  {% if videos|selectattr('status','equalto','processing')|list %}
+    setTimeout(()=>location.reload(), 15000);
+  {% endif %}
+</script>
+{% endblock %}

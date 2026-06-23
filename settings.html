@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>⚙️ Site Settings</h2>
+<p><a href="{{ url_for('admin_dashboard') }}">← Back to admin</a></p>
+<form method="post" class="settings-form">
+  <fieldset>
+    <legend>🎨 Branding</legend>
+    <label>Site name <input name="site_name" value="{{ current.site_name }}"></label>
+    <label>Tagline <input name="site_tagline" value="{{ current.site_tagline }}"></label>
+    <label>Logo emoji <input name="logo_emoji" value="{{ current.logo_emoji }}"></label>
+    <label>Primary color <input type="color" name="primary_color" value="{{ current.primary_color }}"></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>🧠 AI Configuration</legend>
+    <label>Gemini chat model <input name="gemini_model" value="{{ current.gemini_model }}"></label>
+    <label>Image model <input name="image_model" value="{{ current.image_model }}"></label>
+    <label>System prompt <textarea name="system_prompt" rows="6">{{ current.system_prompt }}</textarea></label>
+    <label>Voice language code (en, hi, ur, es...) <input name="voice_lang" value="{{ current.voice_lang }}"></label>
+    <label>Scene duration (seconds) <input type="number" name="scene_duration" value="{{ current.scene_duration }}"></label>
+    <label>Video resolution (720 or 1080) <input type="number" name="video_resolution" value="{{ current.video_resolution }}"></label>
+  </fieldset>
+
+  <fieldset>
+    <legend>🎛️ Features (on/off)</legend>
+    <label class="checkbox"><input type="checkbox" name="signup_enabled" {% if current.signup_enabled == 'true' %}checked{% endif %}> Allow new signups</label>
+    <label class="checkbox"><input type="checkbox" name="video_gen_enabled" {% if current.video_gen_enabled == 'true' %}checked{% endif %}> Video generation enabled</label>
+    <label class="checkbox"><input type="checkbox" name="require_login" {% if current.require_login == 'true' %}checked{% endif %}> Require login to view site</label>
+    <label>Free credits for new user <input type="number" name="free_credits" value="{{ current.free_credits }}"></label>
+    <label>Max prompt length <input type="number" name="max_prompt_length" value="{{ current.max_prompt_length }}"></label>
+  </fieldset>
+
+  <button class="btn" type="submit">💾 Save all settings</button>
+</form>
+{% endblock %}

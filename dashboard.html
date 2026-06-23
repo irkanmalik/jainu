@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+<div class="stats">
+  <div class="stat"><b>{{ stats.users }}</b><span>Users</span></div>
+  <div class="stat"><b>{{ stats.videos }}</b><span>Videos</span></div>
+  <div class="stat"><b>{{ stats.pending }}</b><span>Processing</span></div>
+  <div class="stat"><b>{{ stats.failed }}</b><span>Failed</span></div>
+</div>
+<p><a class="btn" href="{{ url_for('admin_settings') }}">⚙️ Site Settings</a></p>
+
+<h3>Users</h3>
+<table class="data">
+  <tr><th>Email</th><th>Name</th><th>Credits</th><th>Admin</th><th>Banned</th><th>Actions</th></tr>
+  {% for u in users %}
+  <tr>
+    <td>{{ u.email }}</td><td>{{ u.name or '-' }}</td><td>{{ u.credits }}</td>
+    <td>{{ '✅' if u.is_admin else '' }}</td><td>{{ '🚫' if u.is_banned else '' }}</td>
+    <td class="actions">
+      <form method="post" action="{{ url_for('admin_user_action', uid=u.id, action='ban' if not u.is_banned else 'unban') }}"><button>{{ 'Ban' if not u.is_banned else 'Unban' }}</button></form>
+      <form method="post" action="{{ url_for('admin_user_action', uid=u.id, action='make_admin' if not u.is_admin else 'remove_admin') }}"><button>{{ 'Make admin' if not u.is_admin else 'Remove admin' }}</button></form>
+      <form method="post" action="{{ url_for('admin_user_action', uid=u.id, action='add_credits') }}"><input type="number" name="amount" value="10" style="width:60px"><button>+ Credits</button></form>
+      <form method="post" action="{{ url_for('admin_user_action', uid=u.id, action='delete') }}" onsubmit="return confirm('Delete user?')"><button class="danger">Delete</button></form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+
+<h3>Recent Videos</h3>
+<table class="data">
+  <tr><th>User</th><th>Prompt</th><th>Status</th><th>Created</th><th></th></tr>
+  {% for v in videos %}
+  <tr>
+    <td>{{ v.user.email }}</td>
+    <td>{{ v.prompt[:60] }}</td>
+    <td><span class="status status-{{ v.status }}">{{ v.status }}</span></td>
+    <td>{{ v.created_at.strftime('%m-%d %H:%M') }}</td>
+    <td><form method="post" action="{{ url_for('admin_delete_video', vid=v.id) }}" onsubmit="return confirm('Delete?')"><button class="danger">Delete</button></form></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}
